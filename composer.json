@@ -1,0 +1,14 @@
+{
+    "name": "codehell/dark",
+    "description": "A canvas javascript autogame",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "codehell",
+            "email": "admin@codehell.net"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
