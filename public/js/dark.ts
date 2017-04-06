@@ -7,20 +7,20 @@ interface Figure {
   draw (ctx: CanvasRenderingContext2D)
 }
 interface Move {
-  xRange: number
-  yRange: number
+  figure: Figure
+  target: Point
   speed: number
-  line: number
-  delay: number
   speedX: number
   speedY: number
+  ctx: CanvasRenderingContext2D
   setTarget (target: Point, speed:number)
   newPos ()
+  wallCollision ()
 }
 let canvas: HTMLCanvasElement = <HTMLCanvasElement> document.getElementById('canvas')
 let ctx = canvas.getContext('2d')
 
-class Point {
+class Point implements Point{
   constructor(x: number, y: number) {
     this.x = x
     this.y = y
@@ -28,73 +28,90 @@ class Point {
 }
 
 class Move implements Move{
-  element: Figure
-  xRange: number
-  yRange: number
+  figure: Figure
+  target: Point
   speed: number
-  line: number
-  delay: number
   speedX: number
   speedY: number
   ctx: CanvasRenderingContext2D
-  constructor (element, target, speed, ctx) {
-    this.element = element
-    this.setTarget(target, speed)
+  constructor (figure, target, speed, ctx) {
+    this.figure = figure
+    this.target = target
+    this.setTarget(this.target, speed)
     this.ctx = ctx
   }
   setTarget (target: Point, speed:number) {
-    this.xRange = target.x - this.element.point.x
-    this.yRange = target.y - this.element.point.y
+    let xRange = this.target.x - this.figure.point.x
+    let yRange = this.target.y - this.figure.point.y
     this.speed = speed
-    this.line = Math.sqrt(Math.pow(this.xRange, 2) + Math.pow(this.yRange, 2))
-    this.delay = this.line / this.speed
-    this.speedX = this.xRange / this.delay
-    this.speedY = this.yRange / this.delay
+    let line = Math.sqrt(Math.pow(xRange, 2) + Math.pow(yRange, 2))
+    let delay = line / this.speed
+    this.speedX = xRange / delay
+    this.speedY = yRange / delay
   }
   newPos () {
-    this.element.point.x += this.speedX
-    this.element.point.y += this.speedY
-    this.element.draw(this.ctx)
+    this.figure.point.x += this.speedX
+    this.figure.point.y += this.speedY
+    this.figure.draw(this.ctx)
+    this.wallCollision()
+  }
+  wallCollision () {
+    if (this.figure.point.x - 10 < 0 || this.figure.point.x + 10 > 800) {
+      this.speedX = -this.speedX
+    }
+    if (this.figure.point.y - 10 < 0 || this.figure.point.y + 10 > 600) {
+      this.speedY = -this.speedY
+    }
   }
 }
 
 class Ball implements Figure {
   point: Point
   rad: number
-  constructor (point: Point, rad: number) {
+  color: string
+  constructor (point: Point, rad: number, color) {
     this.point = point
     this.rad = rad
+    this.color = color
   }
   draw (ctx: CanvasRenderingContext2D) {
     ctx.beginPath()
     ctx.arc(this.point.x, this.point.y, this.rad, 0, Math.PI * 2)
-    ctx.fillStyle = 'blue'
+    ctx.fillStyle = this.color
     ctx.closePath()
     ctx.fill()
   }
 }
 
 let balls: Move[] = []
-let bottom = canvas.height
 let i = 0;
-function generate () {
+function genBalls () {
+
   let point: Point = new Point(canvas.width - 10, canvas.height - 10)
-  let ball: Figure = new Ball(point, 10)
-  let target = new Point(20, bottom = bottom - 10)
-  let mov = new Move(ball, target, 1, ctx)
+  let color = Math.random() < 0.5 ? 'grey' : 'white'
+  let ball: Figure = new Ball(point, 10, color)
+
+  let target = new Point(Math.random() * canvas.width, Math.random() * canvas.height)
+  let mov = new Move(ball, target, 0.5, ctx)
   balls.push(mov)
 }
+
+let req = window.requestAnimationFrame(draw)
+
 function draw (time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  if (i % 100 == 0) {
-    generate()
+  if (i % 3 == 0) {
+    genBalls()
   }
   balls.forEach(function (mov) {
     mov.newPos()
   })
-  console.log(time)
+
+  console.log(i)
   i++;
-  if (i > 100000) return
+  if (i > 100000) {
+    window.cancelAnimationFrame(req);
+    return
+  }
   window.requestAnimationFrame(draw);
 }
-window.requestAnimationFrame(draw)
