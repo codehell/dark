@@ -1,33 +1,14 @@
-interface Point {
-  x: number
-  y: number
-}
-interface Figure {
-  point: Point
-  draw (ctx: CanvasRenderingContext2D)
-}
-interface Move {
-  figure: Figure
-  target: Point
-  speed: number
-  speedX: number
-  speedY: number
-  ctx: CanvasRenderingContext2D
-  setTarget (target: Point, speed:number)
-  newPos ()
-  wallCollision ()
-}
 let canvas: HTMLCanvasElement = <HTMLCanvasElement> document.getElementById('canvas')
 let ctx = canvas.getContext('2d')
-
-class Point implements Point{
+class Point {
+  x: number
+  y: number
   constructor(x: number, y: number) {
     this.x = x
     this.y = y
   }
 }
-
-class Move implements Move{
+class Move {
   figure: Figure
   target: Point
   speed: number
@@ -65,14 +46,43 @@ class Move implements Move{
   }
 }
 
-class Ball implements Figure {
+class MoveBall extends Move {
+
+}
+abstract class Figure {
+  point: Point
+  color: string
+  constructor (point, color) {
+    this.point = point
+    this.color = color
+  }
+  abstract draw (ctx): void
+}
+class Rectangle extends Figure {
+  point: Point
+  color: string
+  width: number
+  height: number
+  constructor (point, width, height, color) {
+    super (point, color)
+    this.width = width
+    this.height = height
+  }
+  draw (ctx) {
+    ctx.beginPath()
+    ctx.fillStyle = this.color
+    ctx.fillRect(this.point.x, this.point.y, this.width, this.height)
+    ctx.closePath()
+  }
+}
+class Ball extends Figure{
   point: Point
   rad: number
   color: string
-  constructor (point: Point, rad: number, color) {
-    this.point = point
+  constructor (point, rad, color) {
+    super (point, color)
     this.rad = rad
-    this.color = color
+
   }
   draw (ctx: CanvasRenderingContext2D) {
     ctx.beginPath()
@@ -83,16 +93,27 @@ class Ball implements Figure {
   }
 }
 
+/** Fin de definicion de Globales y clases */
 let balls: Move[] = []
+let squares: Move[] = []
 let i = 0;
-function genBalls () {
+function genSquares () {
+  let squarePoint = new Point(canvas.width - 10, canvas.height - 10)
+  let square = new Rectangle(squarePoint, 10, 10, 'red')
+  let target = new Point(Math.random() * canvas.width, Math.random() * canvas.height)
 
-  let point: Point = new Point(canvas.width - 10, canvas.height - 10)
+  console.log(target.x)
+  let mov = new Move(square, target, 2, ctx)
+  squares.push(mov)
+}
+
+function genBalls () {
+  let ballPoint: Point = new Point(canvas.width - 10, canvas.height - 10)
   let color = Math.random() < 0.5 ? 'grey' : 'white'
-  let ball: Figure = new Ball(point, 10, color)
+  let ball: Figure = new Ball(ballPoint, 10, color)
 
   let target = new Point(Math.random() * canvas.width, Math.random() * canvas.height)
-  let mov = new Move(ball, target, 0.5, ctx)
+  let mov = new Move(ball, target, 3, ctx)
   balls.push(mov)
 }
 
@@ -102,14 +123,16 @@ function draw (time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   if (i % 3 == 0) {
     genBalls()
+    genSquares()
   }
   balls.forEach(function (mov) {
     mov.newPos()
   })
-
-  console.log(i)
+  squares.forEach(function (mov) {
+    mov.newPos()
+  })
   i++;
-  if (i > 100000) {
+  if (i > 10000) {
     window.cancelAnimationFrame(req);
     return
   }
