@@ -10,6 +10,8 @@
 </head>
 <body>
     <canvas id="canvas" width="800" height="600"></canvas>
+    <script src="js/figures.js"></script>
+    <script src="js/move.js"></script>
     <script src="js/dark.js"></script>
 </body>
 </html>
