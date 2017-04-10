@@ -7,35 +7,29 @@ class Point {
     }
 }
 /** Fin de definicion de Globales y clases */
-let balls = [];
+let moves = [];
 let i = 0;
-function genBalls() {
-    let ballPoint = new Point(canvas.width - 10, canvas.height - 10);
-    let color = Math.random() < 0.5 ? 'grey' : 'blue';
-    let ball = new Ball(ballPoint, 10, color);
-    let target = new Point(Math.random() * canvas.width, Math.random() * canvas.height);
-    let mov = new BallMove(ball, target, 5, ctx);
-    balls.push(mov);
-}
+let ball1 = new Ball({ x: 100, y: 100 }, 5, 'red');
+let ball2 = new Ball({ x: 125, y: 100 }, 5, 'blue');
+moves.push(new BallMove(ball1, { x: 100, y: 101 }, 0, ctx));
+moves.push(new BallMove(ball2, { x: 125, y: 100 }, 0, ctx));
 let req = window.requestAnimationFrame(draw);
 function draw(time) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (i % 3 == 0 && i < 50) {
-        genBalls();
-    }
-    balls.forEach(function (mov) {
-        let collisioners = balls.slice(0);
-        collisioners.splice(balls.indexOf(mov), 1);
-        mov.newPos();
-        collisioners.forEach(function (m) {
-            console.log(m);
-            //mov.ballCollision()
-        });
-    });
     i++;
-    if (i > 10) {
+    moves.forEach((move) => {
+        move.newPos();
+    });
+    if (i > 100000000) {
         window.cancelAnimationFrame(req);
         return;
     }
     window.requestAnimationFrame(draw);
 }
+document.getElementById('set').addEventListener('click', () => {
+    let x = parseInt(document.getElementById('x').value);
+    let y = parseInt(document.getElementById('y').value);
+    let s = parseInt(document.getElementById('s').value);
+    moves[0].setTarget({ x: x, y: y }, s);
+    console.log(moves[0].speedX);
+}, false);

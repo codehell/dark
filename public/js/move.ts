@@ -17,9 +17,20 @@ abstract class Move {
     let yRange = this.target.y - this.figure.point.y
     this.speed = speed
     let line = Math.sqrt(Math.pow(xRange, 2) + Math.pow(yRange, 2))
-    let delay = line / this.speed
-    this.speedX = xRange / delay
-    this.speedY = yRange / delay
+    let delay = 0;
+    if (this.speed === 0) {
+      delay = 0
+    } else {
+      delay = line / this.speed
+    }
+    if (delay === 0) {
+      this.speedX = 0
+      this.speedY = 0
+    } else {
+      this.speedX = xRange / delay
+      this.speedY = yRange / delay
+    }
+
   }
   newPos () {
     this.figure.point.x += this.speedX
@@ -53,11 +64,6 @@ class BallMove extends Move {
       || this.figure.point.y + this.figure.rad > 600
     ) {
       this.speedY = -this.speedY
-    }
-  }
-  ballCollision (move: Move) {
-    if ((Math.abs(this.figure.point.x) - Math.abs(move.figure.point.x)) < this.figure.rad) {
-      this.collisioned = true
     }
   }
 }
